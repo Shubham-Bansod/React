@@ -1,12 +1,5 @@
 import React from "react";
 
-<<<<<<< Updated upstream
-import "./Button.css";
-
-const Button = (props) => {
-  return (
-    <button type={props.type} className="button" onClick={props.onClick}>
-=======
 import classes from "./Button.module.css";
 
 const Button = (props) => {
@@ -17,7 +10,6 @@ const Button = (props) => {
       onClick={props.onClick}
       disabled={props.disabled}
     >
->>>>>>> Stashed changes
       {props.children}
     </button>
   );
