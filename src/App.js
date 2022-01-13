@@ -1,24 +1,81 @@
-import logo from './logo.svg';
-import './App.css';
-
+import "./App.css";
+import React, { useState, useEffect, useCallback } from "react";
+import MoviesList from "./components/MoviesList";
+import AddMovie from "./components/AddMovie";
 function App() {
+  const [movies, setMovies] = useState([]);
+  const [isLoading, setIsLodaing] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchMoviesHandler = useCallback(async () => {
+    setIsLodaing(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        "https://movie-fetching-default-rtdb.firebaseio.com/movies.json",
+      );
+      if (!response.ok) {
+        throw new Error("Something went wrong");
+      }
+      const data = await response.json();
+
+      let loadedMovies = [];
+
+      for (const key in data) {
+        loadedMovies.push({
+          id: key,
+          title: data[key].title,
+          openingText: data[key].openingText,
+          releaseDate: data[key].releaseDate,
+        });
+      }
+      setMovies(loadedMovies);
+    } catch (error) {
+      setError(error.message);
+    }
+    setIsLodaing(false);
+  }, []);
+
+  useEffect(() => {
+    fetchMoviesHandler();
+  }, [fetchMoviesHandler]);
+
+  async function addMovieHandler(movie) {
+    const response = await fetch(
+      "https://movie-fetching-default-rtdb.firebaseio.com//movies.json",
+      {
+        method: "POST",
+        body: JSON.stringify(movie),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    const data = await response.json();
+    console.log(data);
+  }
+
+  let content = <p>Found No Movies</p>;
+  if (movies.length > 0) {
+    content = <MoviesList movies={movies} />;
+  }
+  if (error) {
+    content = <p>{error}</p>;
+  }
+  if (isLoading) {
+    content = <p>Loading .....</p>;
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <section>
+        <AddMovie onAddMovie={addMovieHandler} />
+      </section>
+      <section>
+        <button onClick={fetchMoviesHandler}>Fetch Movies</button>
+      </section>
+      <section>{content}</section>
+    </>
   );
 }
 
